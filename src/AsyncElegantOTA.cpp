@@ -6,7 +6,7 @@ void AsyncElegantOtaClass::setID(const char* id){
     _id = id;
 }
 
-void AsyncElegantOtaClass::begin(AsyncWebServer *server, const char* username, const char* password){
+void AsyncElegantOtaClass::begin(AsyncWebServer *server, std::function<void(String)> startUpdateFct = nullptr, const char* username, const char* password){
     _server = server;
 
     if(strlen(username) > 0){
@@ -85,6 +85,8 @@ void AsyncElegantOtaClass::begin(AsyncWebServer *server, const char* username, c
             #endif
                 Update.printError(Serial);
                 return request->send(400, "text/plain", "OTA could not begin");
+                } else {
+                    this->signalStartUpdate(filename);
             }
         }
 
@@ -106,8 +108,10 @@ void AsyncElegantOtaClass::begin(AsyncWebServer *server, const char* username, c
     });
 }
 
-// deprecated, keeping for backward compatibility
-void AsyncElegantOtaClass::loop() {
+void AsyncElegantOtaClass::signalStartUpdate(const String& filename) {
+    if (_startUpdateFct != nullptr) {
+        _startUpdateFct(filename);
+    }
 }
 
 void AsyncElegantOtaClass::restart() {

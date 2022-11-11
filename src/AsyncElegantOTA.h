@@ -1,8 +1,6 @@
 #ifndef AsyncElegantOTA_h
 #define AsyncElegantOTA_h
 
-#warning AsyncElegantOTA.loop(); is deprecated, please remove it from loop() if defined. This function will be removed in a future release.
-
 #include "Arduino.h"
 #include "stdlib_noniso.h"
 
@@ -31,9 +29,10 @@ class AsyncElegantOtaClass{
     public:
         void
             setID(const char* id),
-            begin(AsyncWebServer *server, const char* username = "", const char* password = ""),
-            loop(),
+            begin(AsyncWebServer *server, std::function<void(String)> startUpdateFct = nullptr, const char* username = "", const char* password = ""),
             restart();
+            
+        void signalStartUpdate(const String& filename);
 
     private:
         AsyncWebServer *_server;
@@ -44,6 +43,7 @@ class AsyncElegantOtaClass{
         String _username = "";
         String _password = "";
         bool _authRequired = false;
+        std::function<void(String)> _startUpdateFct = nullptr;
 
 };
 
