@@ -1,7 +1,7 @@
 #ifndef AsyncElegantOTA_h
 #define AsyncElegantOTA_h
 
-#warning AsyncElegantOTA.loop(); is deprecated, please remove it from loop() if defined. This function will be removed in a future release.
+//#warning AsyncElegantOTA.loop(); is deprecated, please remove it from loop() if defined. This function will be removed in a future release.
 
 #include "Arduino.h"
 #include "stdlib_noniso.h"
@@ -34,8 +34,9 @@ class AsyncElegantOtaClass{
             _id = id;
         }
 
-        void begin(AsyncWebServer *server, const char* username = "", const char* password = ""){
+        void begin(AsyncWebServer *server, std::function<void(String)> startUpdateFct = nullptr, const char* username = "", const char* password = ""){
             _server = server;
+            _startUpdateFct = startUpdateFct;
 
             if(strlen(username) > 0){
                 _authRequired = true;
@@ -113,6 +114,8 @@ class AsyncElegantOtaClass{
                     #endif
                         Update.printError(Serial);
                         return request->send(400, "text/plain", "OTA could not begin");
+                    } else {
+                        this->signalStartUpdate(filename);
                     }
                 }
 
@@ -135,7 +138,12 @@ class AsyncElegantOtaClass{
         }
 
         // deprecated, keeping for backward compatibility
-        void loop() {
+        // void loop() {
+        // }
+        void signalStartUpdate(const String& filename) {
+            if (_startUpdateFct != nullptr) {
+                _startUpdateFct(filename);
+            }
         }
         
         void restart() {
@@ -163,6 +171,7 @@ class AsyncElegantOtaClass{
         String _username = "";
         String _password = "";
         bool _authRequired = false;
+        std::function<void(String)> _startUpdateFct = nullptr;
 
 };
 
