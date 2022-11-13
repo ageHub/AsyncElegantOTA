@@ -6,7 +6,7 @@ void AsyncElegantOtaClass::setID(const char* id){
     _id = id;
 }
 
-void AsyncElegantOtaClass::begin(AsyncWebServer *server, std::function<void(String)> startUpdateFct = nullptr, const char* username, const char* password){
+void AsyncElegantOtaClass::begin(AsyncWebServer *server, std::function<void(String)> startUpdateFct, const char* username, const char* password){
     _server = server;
 
     if(strlen(username) > 0){
