@@ -3,34 +3,15 @@
 
 #include "Arduino.h"
 #include "stdlib_noniso.h"
-
-#if defined(ESP8266)
-    #include "ESP8266WiFi.h"
-    #include "ESPAsyncTCP.h"
-    #include "flash_hal.h"
-    #include "FS.h"
-#elif defined(ESP32)
-    #include "WiFi.h"
-    #include "AsyncTCP.h"
-    #include "Update.h"
-    #include "esp_int_wdt.h"
-    #include "esp_task_wdt.h"
-#endif
-
-#include "Hash.h"
 #include "ESPAsyncWebServer.h"
-#include "FS.h"
-
-#include "elegantWebpage.h"
 
 
 class AsyncElegantOtaClass{
 
     public:
-        void
-            setID(const char* id),
-            begin(AsyncWebServer *server, std::function<void(String)> startUpdateFct = nullptr, const char* username = "", const char* password = ""),
-            restart();
+        void setID(const char* id);
+        void begin(AsyncWebServer *server, std::function<void(String)> startUpdateFct = nullptr, const char* username = "", const char* password = "");
+        void restart();
             
         void signalStartUpdate(const String& filename);
 
