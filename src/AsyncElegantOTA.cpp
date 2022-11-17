@@ -44,11 +44,12 @@ void AsyncElegantOtaClass::begin(AsyncWebServer *server, std::function<void(Stri
                 return request->requestAuthentication();
             }
         }
-        #if defined(ESP8266)
-            request->send(200, "application/json", "{\"id\": \""+_id+"\", \"hardware\": \"ESP8266\"}");
-        #elif defined(ESP32)
-            request->send(200, "application/json", "{\"id\": \""+_id+"\", \"hardware\": \"ESP32\"}");
-        #endif
+        request->send(200, "application/json", "{\"id\": \""+_id+"\", \"hardware\": \""+ProcessorType+"\"}");
+        // #if defined(ESP8266)
+        //     request->send(200, "application/json", "{\"id\": \""+_id+"\", \"hardware\": \"ESP8266\"}");
+        // #elif defined(ESP32)
+        //     request->send(200, "application/json", "{\"id\": \""+_id+"\", \"hardware\": \"ESP32\"}");
+        // #endif
     });
 
     _server->on("/update", HTTP_GET, [&](AsyncWebServerRequest *request){
@@ -92,25 +93,16 @@ void AsyncElegantOtaClass::begin(AsyncWebServer *server, std::function<void(Stri
                 return request->send(400, "text/plain", "MD5 parameter invalid");
             }
 
-            #if defined(ESP8266)
-                int cmd = (filename == "filesystem") ? U_FS : U_FLASH;
-                Update.runAsync(true);
-                size_t fsSize = ((size_t) &_FS_end - (size_t) &_FS_start);
-                uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
-                if (!Update.begin((cmd == U_FS)?fsSize:maxSketchSpace, cmd)){ // Start with max available size
-            #elif defined(ESP32)
-                int cmd = (filename == "filesystem") ? U_SPIFFS : U_FLASH;
-                if (!Update.begin(UPDATE_SIZE_UNKNOWN, cmd)) { // Start with max available size
-            #endif
+            if (this->beginProcessorDependentUpdate(filename)) {
                 Update.printError(Serial);
                 return request->send(400, "text/plain", "OTA could not begin");
-                } else {
-                    this->signalStartUpdate(filename);
+            } else {
+                this->signalStartUpdate(filename);
             }
         }
 
         // Write chunked data to the free sketch space
-        if(len){
+        if (len) {
             if (Update.write(data, len) != len) {
                 return request->send(400, "text/plain", "OTA could not begin");
             }
@@ -121,7 +113,7 @@ void AsyncElegantOtaClass::begin(AsyncWebServer *server, std::function<void(Stri
                 Update.printError(Serial);
                 return request->send(400, "text/plain", "Could not end OTA");
             }
-        }else{
+        } else {
             return;
         }
     });
@@ -141,12 +133,38 @@ void AsyncElegantOtaClass::restart() {
 }
 
 String AsyncElegantOtaClass::getID(){
-    String id = "";
-    #if defined(ESP8266)
-        id = String(ESP.getChipId());
-    #elif defined(ESP32)
-        id = String((uint32_t)ESP.getEfuseMac(), HEX);
-    #endif
+    String id = getProcessorDependentID();
     id.toUpperCase();
     return id;
 }
+
+#if defined(ESP8266)
+
+const String AsyncElegantOtaClass::ProcessorType = "ESP8266";
+
+String AsyncElegantOtaClass::getProcessorDependentID() {
+    return String(ESP.getChipId());
+}
+
+bool beginProcessorDependentUpdate(const String& filename) {
+    const int cmd = (filename == "filesystem") ? U_FS : U_FLASH;
+    Update.runAsync(true);
+    const size_t fsSize = ((size_t) &_FS_end - (size_t) &_FS_start);
+    const uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
+    return Update.begin((cmd == U_FS) ? fsSize : maxSketchSpace, cmd); // Start with max available size
+}
+
+#elif defined(ESP32)
+
+const String AsyncElegantOtaClass::ProcessorType = "ESP32";
+
+String AsyncElegantOtaClass::getProcessorDependentID(){
+    return String((uint32_t)ESP.getEfuseMac(), HEX);
+}
+
+bool AsyncElegantOtaClass::beginProcessorDependentUpdate(const String& filename) {
+    const int cmd = (filename == "filesystem") ? U_SPIFFS : U_FLASH;
+    return Update.begin(UPDATE_SIZE_UNKNOWN, cmd); // Start with max available size
+}
+
+#endif

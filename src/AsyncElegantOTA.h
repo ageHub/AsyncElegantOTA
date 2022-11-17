@@ -19,12 +19,16 @@ class AsyncElegantOtaClass{
         AsyncWebServer *_server;
 
         String getID();
+        String getProcessorDependentID();
+        bool beginProcessorDependentUpdate(const String& filename);
 
         String _id = getID();
         String _username = "";
         String _password = "";
         bool _authRequired = false;
         std::function<void(String)> _startUpdateFct = nullptr;
+
+        static const String ProcessorType;
 
 };
 
