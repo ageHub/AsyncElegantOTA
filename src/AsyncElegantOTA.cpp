@@ -45,11 +45,6 @@ void AsyncElegantOtaClass::begin(AsyncWebServer *server, std::function<void(Stri
             }
         }
         request->send(200, "application/json", "{\"id\": \""+_id+"\", \"hardware\": \""+ProcessorType+"\"}");
-        // #if defined(ESP8266)
-        //     request->send(200, "application/json", "{\"id\": \""+_id+"\", \"hardware\": \"ESP8266\"}");
-        // #elif defined(ESP32)
-        //     request->send(200, "application/json", "{\"id\": \""+_id+"\", \"hardware\": \"ESP32\"}");
-        // #endif
     });
 
     _server->on("/update", HTTP_GET, [&](AsyncWebServerRequest *request){
@@ -93,7 +88,7 @@ void AsyncElegantOtaClass::begin(AsyncWebServer *server, std::function<void(Stri
                 return request->send(400, "text/plain", "MD5 parameter invalid");
             }
 
-            if (this->beginProcessorDependentUpdate(filename)) {
+            if (!this->beginProcessorDependentUpdate(filename)) {
                 Update.printError(Serial);
                 return request->send(400, "text/plain", "OTA could not begin");
             } else {
@@ -136,6 +131,22 @@ String AsyncElegantOtaClass::getID(){
     String id = getProcessorDependentID();
     id.toUpperCase();
     return id;
+}
+
+String AsyncElegantOtaClass::getVersion() {
+    return "1.0.1";
+}
+
+String AsyncElegantOtaClass::getCompileTime() {
+    return __TIME__;
+}
+
+String AsyncElegantOtaClass::getCompileDate() {
+    return __DATE__;
+}
+
+String AsyncElegantOtaClass::getCppFileTimeStamp() {
+    return __TIMESTAMP__;
 }
 
 #if defined(ESP8266)

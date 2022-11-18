@@ -14,6 +14,12 @@ class AsyncElegantOtaClass{
         void restart();
             
         void signalStartUpdate(const String& filename);
+        
+        static String getVersion();
+        static String getCompileTime();
+        static String getCompileDate();
+        static String getCppFileTimeStamp();
+        static String getHeaderFileTimeStamp() {return __TIMESTAMP__;};
 
     private:
         AsyncWebServer *_server;
