@@ -248,7 +248,7 @@ String AsyncElegantOtaClass::getProcessorDependentID() {
     return String(ESP.getChipId());
 }
 
-bool beginProcessorDependentUpdate(const String& filename) {
+bool AsyncElegantOtaClass::beginProcessorDependentUpdate(const String& filename) {
     const int cmd = (filename == "filesystem") ? U_FS : U_FLASH;
     Update.runAsync(true);
     const size_t fsSize = ((size_t) &_FS_end - (size_t) &_FS_start);
