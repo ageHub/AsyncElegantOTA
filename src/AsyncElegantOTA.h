@@ -28,12 +28,16 @@ class AsyncElegantOtaClass{
         String getProcessorDependentID();
         bool beginProcessorDependentUpdate(const String& filename);
         void initializeLoginData(const char* username, const char* password);
+
+        bool loginValid(AsyncWebServerRequest *request);
         void subscribeMethodsOnServer();
+
         void subscribeGetIdentityOnServer();
         void performIdentityRequest(AsyncWebServerRequest *request);
+
         void subscribeGetUpdateOnServer();
         void performGetUpdateRequest(AsyncWebServerRequest *request);
-        bool loginValid(AsyncWebServerRequest *request);
+
         void subscribePosttUpdateOnServer();
         void performPostUpdateRequest(AsyncWebServerRequest *request);
         void performPostUpdateUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final);
